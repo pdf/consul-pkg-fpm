@@ -1,0 +1,11 @@
+# This file can be used to change the arguments
+# passed to the consul agent.
+
+# The default value for GOMAXPROCS (# of CPUs) can be
+# overridden explicitly here.
+#GOMAXPROCS=2
+
+# Additional flags can be passed to the consul agent. It is
+# however preferable to edit configuration files under
+# /etc/consul instead.
+CONSUL_FLAGS="-config-dir=/etc/consul -data-dir=/var/lib/consul"

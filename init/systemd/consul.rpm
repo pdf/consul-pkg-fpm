@@ -1,0 +1,16 @@
+[Unit]
+Description=Consul agent
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/sysconfig/consul
+User=consul
+Group=consul
+ExecStart=/usr/bin/consul agent $CONSUL_FLAGS
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=10
+LimitNOFILE=infinity
+
+[Install]
+WantedBy=multi-user.target

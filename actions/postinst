@@ -1,0 +1,38 @@
+#!/bin/sh
+
+set -e
+
+NUSER="consul"
+NGROUP="consul"
+NHOME="/var/lib/consul"
+NGECOS="consul user"
+NBIN="/usr/bin/consul"
+NCONFIG="<%= config_dir %>"
+NSHELL="/bin/sh"
+
+/usr/bin/getent group $NGROUP > /dev/null 2>&1 || /usr/sbin/groupadd --system $NGROUP
+if ! /usr/bin/getent passwd $NUSER > /dev/null 2>&1 ; then
+	/usr/sbin/useradd --system -M --home $NHOME --gid $NGROUP \
+		--comment "$NGECOS" --shell $NSHELL $NUSER
+
+	# We only modify home file permissions on initial addition of
+	# the user to avoid clobbering changes made by an administrator.
+
+	# Only allow user/group access to data
+	if [ -d $NHOME ]; then
+		chown -R ${NUSER}:${NGROUP} $NHOME
+		chmod -R o-rwX $NHOME
+	fi
+
+	# Only allow group members to execute CLI
+	if [ -f $NBIN ]; then
+		chgrp ${NGROUP} $NBIN
+		chmod 0754 $NBIN
+	fi
+
+	# Only allow group members to read config
+	if [ -d $NCONFIG ]; then
+		chgrp -R ${NGROUP} $NCONFIG
+		chmod -R o-rwX $NCONFIG
+	fi
+fi
