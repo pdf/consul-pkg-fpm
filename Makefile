@@ -8,12 +8,10 @@ RPM_DIST ?= fc23
 DEB_ETC_DIR ?= /etc/consul.d
 RPM_ETC_DIR ?= /etc/consul
 URL = https://releases.hashicorp.com/consul/$(VERSION)/consul_$(VERSION)_linux_$(ARCH).zip
-WEB_UI_URL = https://releases.hashicorp.com/consul/$(VERSION)/consul_$(VERSION)_web_ui.zip
 
 BASE_DIR = $(CURDIR)
 CACHE_DIR = $(BASE_DIR)/.cache/$(VERSION)
 MAIN_BUILD_DIR = $(CACHE_DIR)/$(ARCH)/build
-WEB_BUILD_DIR = $(CACHE_DIR)/web_ui/build
 OUT_DIR = $(BASE_DIR)/pkg/$(VERSION)
 
 define PKG_DESCRIPTION
@@ -56,7 +54,6 @@ rpm: download unpack
 	# Unfortunately, deb and rpm packages differ in config directory, so mangle
 	# that here
 	[ -d $(MAIN_BUILD_DIR)$(DEB_ETC_DIR) ] && rm -rf $(MAIN_BUILD_DIR)$(DEB_ETC_DIR) || true
-	[ -d $(WEB_BUILD_DIR)$(DEB_ETC_DIR) ] && rm -rf $(WEB_BUILD_DIR)$(DEB_ETC_DIR) || true
 	## Build main package
 	mkdir -p $(MAIN_BUILD_DIR)$(RPM_ETC_DIR)
 	# Install systemd unit
@@ -79,19 +76,6 @@ rpm: download unpack
 		--rpm-os linux \
 		--rpm-dist $(RPM_DIST) \
 		usr etc var lib
-	## Build web-ui package
-	mkdir -p $(WEB_BUILD_DIR)$(RPM_ETC_DIR)
-	cp $(BASE_DIR)/etc/consul.d/10-web-ui.json $(WEB_BUILD_DIR)$(RPM_ETC_DIR)
-	mkdir -p $(OUT_DIR)
-	cd $(OUT_DIR) ; \
-	fpm -t rpm -s dir -C $(WEB_BUILD_DIR) --name consul-web-ui \
-		--version $(VERSION) --iteration $(ITERATION) --license MPL-2.0 \
-		--architecture all --maintainer $(MAINTAINER) \
-		--description "$${PKG_DESCRIPTION}" \
-		--url https://www.consul.io/ --deb-compression xz \
-		--rpm-os linux \
-		--rpm-dist $(RPM_DIST) \
-		usr etc
 	@echo
 	@echo rpm package available at $(OUT_DIR)
 	@echo
@@ -101,7 +85,6 @@ deb: download unpack
 	# that here
 	[ -d $(MAIN_BUILD_DIR)$(RPM_ETC_DIR) ] && rm -rf $(MAIN_BUILD_DIR)$(RPM_ETC_DIR) || true
 	[ -d $(MAIN_BUILD_DIR)/etc/sysconfig ] && rm -rf $(MAIN_BUILD_DIR)/etc/sysconfig || true
-	[ -d $(WEB_BUILD_DIR)$(RPM_ETC_DIR) ] && rm -rf $(WEB_BUILD_DIR)$(RPM_ETC_DIR) || true
 	## Build main package
 	mkdir -p $(MAIN_BUILD_DIR)$(DEB_ETC_DIR)
 	# Install base config
@@ -116,22 +99,10 @@ deb: download unpack
 		--post-install $(BASE_DIR)/actions/postinst \
 		--template-scripts --template-value config_dir=$(DEB_ETC_DIR) \
 		--deb-compression xz \
-		--deb-suggests consul-web-ui \
 		--deb-default $(BASE_DIR)/init/default/consul \
 		--deb-upstart $(BASE_DIR)/init/upstart/consul \
 		--deb-systemd $(BASE_DIR)/init/systemd/consul \
 		usr etc var
-	## Build web-ui package
-	mkdir -p $(WEB_BUILD_DIR)$(DEB_ETC_DIR)
-	cp $(BASE_DIR)/etc/consul.d/10-web-ui.json $(WEB_BUILD_DIR)$(DEB_ETC_DIR)
-	mkdir -p $(OUT_DIR)
-	cd $(OUT_DIR) ; \
-	fpm -t deb -s dir -C $(WEB_BUILD_DIR) --name consul-web-ui \
-		--version $(VERSION) --iteration "$(ITERATION)~$(DEB_DIST)0" --license MPL-2.0 \
-		--architecture all --maintainer $(MAINTAINER) \
-		--description "$${PKG_DESCRIPTION}" \
-		--url https://www.consul.io/ --deb-compression xz \
-		usr etc
 	@echo
 	@echo deb package available at $(OUT_DIR)
 	@echo
@@ -141,16 +112,9 @@ download:
 		mkdir -p $(CACHE_DIR)/$(ARCH) ; \
 		wget $(URL) -O $(CACHE_DIR)/$(ARCH)/consul.zip ; \
 	fi
-	if [ ! -f $(CACHE_DIR)/web_ui.zip ]; then \
-		mkdir -p $(CACHE_DIR) ; \
-		wget $(WEB_UI_URL) -O $(CACHE_DIR)/web_ui.zip ; \
-	fi
 
 unpack:
 	mkdir -p $(MAIN_BUILD_DIR)/usr/bin
 	cd $(MAIN_BUILD_DIR)/usr/bin/ ; \
 	unzip -o $(CACHE_DIR)/$(ARCH)/consul.zip
 	mkdir -p $(MAIN_BUILD_DIR)/var/lib/consul
-	mkdir -p $(WEB_BUILD_DIR)/usr/share/consul/web-ui
-	cd $(WEB_BUILD_DIR)/usr/share/consul/web-ui ; \
-	unzip -o $(CACHE_DIR)/web_ui.zip
