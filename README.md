@@ -57,11 +57,11 @@ The Makefile allows defining a few variables to allow customizing the build, the
 
 | Variable      | Default         | Description                                   |
 |:-------------:|:---------------:|-----------------------------------------------|
-| `VERSION`     | `0.6.4`         | Version of Consul to download and package     |
+| `VERSION`     | `0.9.3`         | Version of Consul to download and package     |
 | `ITERATION`   | `1`             | Package version iteration - this should be increased each time a package is built |
 | `ARCH`        | `amd64`         | Target architecture: `amd64`/`i386`           |
 | `DEB_DIST`    | `unstable`      | Target distribution for deb-based systems     |
-| `RPM_DIST`    | `fc23`          | Target distribution for rpm-based systems     |
+| `RPM_DIST`    | `fc26`          | Target distribution for rpm-based systems     |
 | `DEB_ETC_DIR` | `/etc/consul.d` | Configuration directory for deb-based systems |
 | `RPM_ETC_DIR` | `/etc/consul`   | Configuration directory for rpm-based systems |
 

@@ -1,10 +1,10 @@
 MAINTAINER = 'Peter Fern <github@0xc0dedbad.com>'
 
-VERSION ?= 0.6.4
+VERSION ?= 0.9.3
 ITERATION ?= 1
 ARCH ?= amd64
 DEB_DIST ?= unstable
-RPM_DIST ?= fc23
+RPM_DIST ?= fc26
 DEB_ETC_DIR ?= /etc/consul.d
 RPM_ETC_DIR ?= /etc/consul
 URL = https://releases.hashicorp.com/consul/$(VERSION)/consul_$(VERSION)_linux_$(ARCH).zip
